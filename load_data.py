@@ -84,7 +84,7 @@ class IMG_Folder(torch.utils.data.Dataset):
     Dataset class for loading brain images with memory optimizations
     """
 
-    def __init__(self, excel_path, data_path, loader=nii_loader, transforms=transform, preload=False):
+    def __init__(self, excel_path, data_path, loader=nii_loader, transforms=None,preload=False):
         """
         Args:
             excel_path: Path to Excel file with metadata
@@ -154,7 +154,9 @@ class IMG_Folder(torch.utils.data.Dataset):
             img = self.cached_data[sub_fn].copy()  # Make a copy to avoid modifying cached data
         else:
             sub_path = os.path.join(self.root, sub_fn)    #image_path constructed
+            
             img = self.loader(sub_path)
+            
             # print("Image shape:", img.shape)
 
         # Preprocessing

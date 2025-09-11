@@ -74,7 +74,7 @@ def main(res):
     print("=========== start train the brain age estimation model =========== \n")
     print(" ==========> Using {} processes for data loader.".format(opt.num_workers))
 
-    HCCT_config_path= '/home/omen/Documents/Megha/vit_brain_age/utils/HCCTconfig.json'
+    HCCT_config_path= '/home/ubuntu/Documents/Megha/Brain_age_estimation/utils/HCCTconfig.json'
     with open(HCCT_config_path, 'r') as f:
         HCCTconfig = json.load(f)
 
@@ -188,7 +188,7 @@ def main(res):
     sum_writer = tensorboardX.SummaryWriter(opt.output_dir)
     print(" ==========>  is getting started...")
     print(" ==========> Training takes {} epochs.".format(num_epochs))
-
+    accumulation_steps = 100 // opt.batch_size 
     # =========== start train =========== #
     for epoch in range(opt.epochs):
             
@@ -199,7 +199,8 @@ def main(res):
 
                                       , optimizer=optimizer
                                       , device=device
-                                      , epoch=epoch)
+                                      , epoch=epoch,
+                                      accumulation_steps=accumulation_steps)
 
         # ===========  evaluate on validation set ===========  #
         valid_loss, valid_mae = validate( valid_loader=valid_loader
@@ -275,6 +276,7 @@ def main(res):
     
     # =========== test on the best model on test data =========== # 
     model_best = model_test
+
     model_best.load_state_dict( torch.load(
                                 os.path.join(opt.output_dir+opt.model+'_best_model.pth.tar')
                                 )['state_dict']) 
@@ -293,7 +295,7 @@ def main(res):
 
 train_loss = []
 
-def train(train_loader, model, criterion1,  optimizer, device, epoch):
+def train(train_loader, model, criterion1,  optimizer, device, epoch,accumulation_steps=1):
     '''
     For training process
 
@@ -340,6 +342,8 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch):
 
         # =========== compute loss =========== #
         loss = criterion1(out, target)
+        loss = loss / accumulation_steps            #added for accumulation loss
+        loss.backward()
         #if opt.lbd > 0:
             #loss2 = criterion2(out, target)
         #else:
@@ -349,10 +353,15 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch):
 
         mae = metric(
                 out.detach(), target.detach().cpu())
-        losses.update(loss, input.size(0))
+        # losses.update(loss, input.size(0))
+        losses.update(loss.item() * accumulation_steps, input.size(0))    #added for accumulation loss
         #LOSS1.update(loss1,input.size(0))
         #LOSS2.update(loss2,img.size(0))
         MAE.update(mae, input.size(0))
+
+        if (i + 1) % accumulation_steps == 0:            #added for accumulation loss
+            optimizer.step()
+            optimizer.zero_grad()
         if i % opt.print_freq == 0:
             print(
                   'Epoch: [{0} / {1}]   [step {2}/{3}]\t'
@@ -365,12 +374,12 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch):
         # =========== loss gradient back progation and optimizer parameter =========== #
 
         # if opt.model != 'HCCT':
-        loss.requires_grad_(True)
-        loss.backward()
+        # loss.requires_grad_(True)
+        # loss.backward()
 
 
-        optimizer.step()
-    with open("../training_loss/"+opt.model+" train_loss.txt", 'w') as train_los:
+        # optimizer.step()
+    with open("./training_loss/"+opt.model+" train_loss.txt", 'w') as train_los:
         train_los.write(str(train_loss))
 
     return losses.avg,MAE.avg

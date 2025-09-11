@@ -1,0 +1,12 @@
+train 2025-09-10 23:15:39.865262
+ ==== TRAIN MAE mtc:4.03414
+epo:070 mtc:8.218
+epo:065 mtc:8.317
+epo:054 mtc:8.363
+epo:049 mtc:8.503
+epo:048 mtc:8.641
+epo:044 mtc:8.729
+epo:040 mtc:8.842
+epo:037 mtc:9.240
+epo:034 mtc:9.555
+epo:033 mtc:9.783

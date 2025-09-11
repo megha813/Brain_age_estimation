@@ -56,7 +56,7 @@ def main():
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    HCCT_config_path= '/home/omen/Documents/Megha/vit_brain_age/utils/HCCTconfig.json'
+    HCCT_config_path= '/home/ubuntu/Documents/Megha/Brain_age_estimation/utils/HCCTconfig.json'
     with open(HCCT_config_path, 'r') as f:
         HCCTconfig = json.load(f)
 
@@ -133,7 +133,7 @@ def main():
         , save_npy=True
         , npy_name=opt.npz_name
         , figure=True
-        , figure_name='../training_loss/'+opt.model+' True_age_and_predicted_age.png')
+        , figure_name='/training_loss/'+opt.model+' True_age_and_predicted_age.png')
 
 
 
@@ -172,7 +172,7 @@ def find_most_frequent_element(tensor):
 
 def test(valid_loader, model, criterion, device
         , save_npy=True,npy_name='test_result.npz'
-        , figure=True, figure_name='../training_loss/'+opt.model+' True_age_and_predicted_age.png'):
+        , figure=True, figure_name='/training_loss/'+opt.model+' True_age_and_predicted_age.png'):
 
     '''
     [Do Test process according pretrained model]
@@ -298,7 +298,7 @@ def test(valid_loader, model, criterion, device
         #Attn2 = torch.mean(torch.stack(Attn2), dim=0)
         #Attn3 = torch.mean(torch.stack(Attn3), dim=0)
 
-        original_data = nii_loader("/home/omen/Documents/Megha/skull_stripped/IXI002-Guys-0828-T1_stripped.nii.gz")
+        original_data = nii_loader("/home/ubuntu/Documents/Megha/IXI002-Guys-0828-T1.nii.gz")
         #修改attention map方向时，修改下面的代码
         original_data = original_data[45, :, :]
 
@@ -348,7 +348,7 @@ def test(valid_loader, model, criterion, device
             plt.scatter(target_numpy,predicted_numpy)
             plt.xlabel('Chronological Age')
             plt.ylabel('predicted brain age')
-            plt.savefig('/home/omen/Documents/Megha/pre_vs_act.png')
+            plt.savefig('/home/ubuntu/Documents/Megha/Brain_age_estimation/triamese_pre_vs_act.png')
             plt.show()
 
         return MAE,np.corrcoef(target_numpy,predicted_numpy)
