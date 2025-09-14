@@ -90,7 +90,7 @@ def main():
             image_sizes=[(91, 109), (91, 91), (109, 91)],
             patch_sizes=[(7, 7), (7, 7), (7, 7)],
             num_channals=[91,109,91],
-            vit_args={'emb_dim': 768, 'mlp_dim': 3072, 'num_heads': 12, 'num_layers': 12, 'num_classes': 1,
+            vit_args={'emb_dim': 768, 'mlp_dim': 3072, 'num_heads': 12, 'num_layers': 10, 'num_classes': 1,
                       'dropout_rate': 0.1, 'attn_dropout_rate': 0.0},
             mlp_dims=[3,128,256,512,1024,512,256,128,1]
         )
