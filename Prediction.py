@@ -218,10 +218,10 @@ def test(valid_loader, model, criterion, device
                 output = model(input,male)
 
             else:
-                output = model(input)
+                # output = model(input)
                 # if isinstance(output, tuple):
                 #     output, _ = output
-                # output, (attn1, attn2, attn3) = model(input, return_attention_weights=True)
+                output, (attn1, attn2, attn3) = model(input, return_attention_weights=True)
                 # print("========== MODEL OUTPUT DEBUG ==========")           #added this to get the idea of what output my model is giving actually
                 # print("Type of output:", type(output))
 
