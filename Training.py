@@ -133,7 +133,7 @@ def main(res):
             image_sizes=[(91, 109), (91, 91), (109, 91)],
             patch_sizes=[(7, 7), (7, 7), (7, 7)],
             num_channals=[91,109,91],
-            vit_args={'emb_dim': 768, 'mlp_dim': 3072, 'num_heads': 12, 'num_layers': 12, 'num_classes': 1,
+            vit_args={'emb_dim': 768, 'mlp_dim': 3072, 'num_heads': 12, 'num_layers': 10, 'num_classes': 1,
                       'dropout_rate': 0.1, 'attn_dropout_rate': 0.0},
             mlp_dims=[3,128,256,512,1024,512,256,128,1]
 
@@ -188,7 +188,7 @@ def main(res):
     sum_writer = tensorboardX.SummaryWriter(opt.output_dir)
     print(" ==========>  is getting started...")
     print(" ==========> Training takes {} epochs.".format(num_epochs))
-    accumulation_steps = 100 // opt.batch_size 
+    # accumulation_steps = 100 // opt.batch_size 
     # =========== start train =========== #
     for epoch in range(opt.epochs):
             
@@ -199,8 +199,8 @@ def main(res):
 
                                       , optimizer=optimizer
                                       , device=device
-                                      , epoch=epoch,
-                                      accumulation_steps=accumulation_steps)
+                                      , epoch=epoch)
+                                    #   accumulation_steps=accumulation_steps)
 
         # ===========  evaluate on validation set ===========  #
         valid_loss, valid_mae = validate( valid_loader=valid_loader
@@ -295,7 +295,7 @@ def main(res):
 
 train_loss = []
 
-def train(train_loader, model, criterion1,  optimizer, device, epoch,accumulation_steps=1):
+def train(train_loader, model, criterion1,  optimizer, device, epoch):
     '''
     For training process
 
@@ -342,8 +342,7 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch,accumulatio
 
         # =========== compute loss =========== #
         loss = criterion1(out, target)
-        loss = loss / accumulation_steps            #added for accumulation loss
-        loss.backward()
+        
         #if opt.lbd > 0:
             #loss2 = criterion2(out, target)
         #else:
@@ -354,14 +353,11 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch,accumulatio
         mae = metric(
                 out.detach(), target.detach().cpu())
         # losses.update(loss, input.size(0))
-        losses.update(loss.item() * accumulation_steps, input.size(0))    #added for accumulation loss
+        losses.update(loss, input.size(0))
         #LOSS1.update(loss1,input.size(0))
         #LOSS2.update(loss2,img.size(0))
         MAE.update(mae, input.size(0))
 
-        if (i + 1) % accumulation_steps == 0:            #added for accumulation loss
-            optimizer.step()
-            optimizer.zero_grad()
         if i % opt.print_freq == 0:
             print(
                   'Epoch: [{0} / {1}]   [step {2}/{3}]\t'
@@ -370,6 +366,12 @@ def train(train_loader, model, criterion1,  optimizer, device, epoch,accumulatio
                   ( epoch, opt.epochs, i, len(train_loader)
                   , loss=losses, MAE=MAE ))
         train_loss.append(loss.item())
+
+        # =========== loss gradient back progation and optimizer parameter =========== #
+        loss.requires_grad_(True)
+        loss.backward()
+
+        optimizer.step()
 
         # =========== loss gradient back progation and optimizer parameter =========== #
 

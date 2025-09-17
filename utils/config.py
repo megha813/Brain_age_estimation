@@ -17,8 +17,8 @@ parser.add_argument('--plot_name'      ,default='test.png'              ,type=st
 #=========== hyperparameter ================ #
 parser.add_argument('--model'       ,default='Multi_VIT',type=str,   help="Deep learning model to do brain age estimation")
 parser.add_argument('--num_workers' ,default=4          ,type=int,   help="The number of worker for dataloader")
-parser.add_argument('--batch_size'  ,default=20  ,type=int,   help="Batch size during training process")
-parser.add_argument('--epochs'      ,default=500   ,type=int,   help="Total training epochs")
+parser.add_argument('--batch_size'  ,default=32  ,type=int,   help="Batch size during training process")
+parser.add_argument('--epochs'      ,default=300   ,type=int,   help="Total training epochs")
 parser.add_argument('--lr'          ,default=1e-3        ,type=float, help="Initial learning rate")
 parser.add_argument('--print_freq'  ,default=5           ,type=int,   help="Training log print interval")
 parser.add_argument('--weight_decay',default=5e-4        ,type=float, help="L2 weight decay ")

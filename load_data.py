@@ -64,19 +64,38 @@ def white0(image, threshold=0):
     # Default case
     return np.zeros_like(image, dtype=np.float32)
 
+class RandSingleAxisRotate:
+    def __init__(self, max_angle=np.deg2rad(20)):
+        self.max_angle = max_angle
+
+    def __call__(self, img):
+        # randomly pick one axis
+        axis = random.choice([0, 1, 2])
+        rotate_range = [0, 0, 0]
+        rotate_range[axis] = self.max_angle
+        t = RandAffine(
+            prob=0.5,
+            rotate_range=tuple(rotate_range),
+            translate_range=(10, 10, 10),
+            mode="bilinear",
+            padding_mode="border"
+        )
+
+        return t(img)
+
 
 class IMG_Folder(torch.utils.data.Dataset):
+    # original_shape = 91,109,91
     transform = Compose([
-        RandAffine(
-            prob=0.5,
-            rotate_range=(np.deg2rad(20), np.deg2rad(20), np.deg2rad(20)),  # rotation
-            translate_range=(10, 10, 10),  # translation
-            padding_mode="border"
-        ),
-        RandFlip(
-            prob=0.5,
-            spatial_axis=[0, 1, 2]  # random flip along any axis
-        )
+        # BorderPad(spatial_border=(20,20,20)),
+        RandSingleAxisRotate(max_angle=np.deg2rad(20)),
+        RandFlip(prob=0.5, spatial_axis=[0, 1, 2]),
+        # CropForeground(
+        # source_key="image",
+        # roi_size=(91, 109, 91),  # put your original shape here,
+        # CropForeground(),                       # tight crop around brain
+        # SpatialPad(spatial_size=original_shape)
+
     ])
 
     
@@ -84,7 +103,7 @@ class IMG_Folder(torch.utils.data.Dataset):
     Dataset class for loading brain images with memory optimizations
     """
 
-    def __init__(self, excel_path, data_path, loader=nii_loader, transforms=None,preload=False):
+    def __init__(self, excel_path, data_path, loader=nii_loader, transforms=transform,preload=False):
         """
         Args:
             excel_path: Path to Excel file with metadata

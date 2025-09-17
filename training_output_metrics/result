@@ -1,12 +1,14 @@
-train 2025-09-10 23:15:39.865262
- ==== TRAIN MAE mtc:4.03414
-epo:070 mtc:8.218
-epo:065 mtc:8.317
-epo:054 mtc:8.363
-epo:049 mtc:8.503
-epo:048 mtc:8.641
-epo:044 mtc:8.729
-epo:040 mtc:8.842
-epo:037 mtc:9.240
-epo:034 mtc:9.555
-epo:033 mtc:9.783
+train 2025-09-15 03:28:52.181348
+ ==== TRAIN MAE mtc:3.08384
+epo:052 mtc:7.873
+epo:048 mtc:7.945
+epo:047 mtc:7.945
+epo:029 mtc:7.954
+epo:028 mtc:8.027
+epo:023 mtc:8.417
+epo:021 mtc:8.704
+epo:019 mtc:8.841
+epo:012 mtc:9.265
+epo:011 mtc:10.258
+best valid model TEST MAE mtc:7.82303
+best valid model TEST rr mtc:0.85307
