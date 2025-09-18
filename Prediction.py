@@ -4,7 +4,7 @@ import torch.nn as nn
 import os,shutil,torch
 import matplotlib.pyplot as plt
 from utils.config import opt
-from load_data import IMG_Folder
+from load_data import IMG_Folder, IMG_Folder_val
 from model import ScaleDense
 from model import CNN
 from model import ResNet
@@ -52,7 +52,7 @@ def metric(output, target):
 
 def main():
     # ======== define data loader and CUDA device ======== #
-    test_data = IMG_Folder(opt.excel_path, opt.test_folder)
+    test_data = IMG_Folder_val(opt.excel_path, opt.test_folder)
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

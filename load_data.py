@@ -195,3 +195,120 @@ class IMG_Folder(torch.utils.data.Dataset):
         # print("Image shape final:", img.shape)
 
         return (img, sid, slabel, smale)
+    
+
+
+
+
+
+class IMG_Folder_val(torch.utils.data.Dataset):
+    # original_shape = 91,109,91
+    transform = Compose([
+        # BorderPad(spatial_border=(20,20,20)),
+        RandSingleAxisRotate(max_angle=np.deg2rad(20)),
+        RandFlip(prob=0.5, spatial_axis=[0, 1, 2]),
+        # CropForeground(
+        # source_key="image",
+        # roi_size=(91, 109, 91),  # put your original shape here,
+        # CropForeground(),                       # tight crop around brain
+        # SpatialPad(spatial_size=original_shape)
+
+    ])
+
+    
+    """
+    Dataset class for loading brain images with memory optimizations
+    """
+
+    def __init__(self, excel_path, data_path, loader=nii_loader, transforms=None,preload=False):
+        """
+        Args:
+            excel_path: Path to Excel file with metadata
+            data_path: Path to directory with NIfTI files
+            loader: Function to load NIfTI files
+            transforms: Transforms to apply to images
+            preload: Whether to preload all data into memory (default: False)
+        """
+        self.root = data_path
+        self.sub_fns = sorted(os.listdir(self.root))
+        
+        self.table_refer = read_table(excel_path)
+        self.loader = loader
+        
+        self.transform= transforms
+        self.preload = preload
+
+        # Create a mapping from subject ID to metadata for faster lookup
+        self.metadata = {}
+        for f in self.table_refer[1:]:      #i have added this to skip the first row of the excel sheet
+            sid = str(f[0])
+            # print(sid)
+            slabel = int(f[1])
+            # print(slabel)
+            smale = f[2]
+            if smale == 1:
+                smale = 0
+            elif smale == 2:
+                smale = 1
+            else:
+                raise ValueError(f"Unexpected SEX_ID value: {smale}")
+            # print(smale)
+            self.metadata[sid] = (slabel, smale)
+            
+
+        # Optionally preload all data into memory
+        if preload:
+            self.cached_data = {}
+            for sub_fn in self.sub_fns:
+                if sub_fn in self.metadata:
+                    sub_path = os.path.join(self.root, sub_fn)
+                    self.cached_data[sub_fn] = self.loader(sub_path)
+
+    def __len__(self):
+        return len(self.sub_fns)
+
+    def __getitem__(self, index):
+
+        sub_fn = self.sub_fns[index]
+
+        # Get metadata for this subject
+        if sub_fn not in self.metadata:
+            # print(f"wrong{sub_fn}")
+            # Find manually if not in mapping (fallback)
+            for f in self.table_refer[1:]:   #i have added this extra syntax for [1:] as the - error accessing the column header also
+                sid = str(f[0])  #here the numbers 0,2,3 are changes to match with the excel i have given
+                slabel = int(f[1])
+                smale = f[2]
+                if sid == sub_fn:
+                    break
+        else:
+            slabel, smale = self.metadata[sub_fn]
+            sid = sub_fn
+
+        # Load image data
+        if self.preload and sub_fn in self.cached_data:
+            img = self.cached_data[sub_fn].copy()  # Make a copy to avoid modifying cached data
+        else:
+            sub_path = os.path.join(self.root, sub_fn)    #image_path constructed
+            
+            img = self.loader(sub_path)
+            
+            # print("Image shape:", img.shape)
+
+        # Preprocessing
+        img = white0(img)
+        img = np.expand_dims(img, 0) 
+        
+        if self.transform is not None:
+            img = self.transform(img)
+        # img = img.squeeze(0)       #done to reduce the dimension of the image - so that the model can take this easily in the input for the permute
+        # Convert to contiguous float tensor
+        img = img[0]
+        img = np.ascontiguousarray(img, dtype=np.float32)
+        img = torch.from_numpy(img).type(torch.FloatTensor)
+        
+        # img= img.unsqueeze(0)
+
+        # print("Image shape final:", img.shape)
+
+        return (img, sid, slabel, smale)

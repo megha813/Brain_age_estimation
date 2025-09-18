@@ -13,7 +13,7 @@ from model import CNN
 from model import ResNet
 from model import VGG
 from model.ranking_loss import rank_difference_loss
-from load_data import IMG_Folder
+from load_data import IMG_Folder, IMG_Folder_val
 from Prediction import test
 from sklearn.metrics import mean_absolute_error
 from model import GlobalLocalTransformer
@@ -83,7 +83,7 @@ def main(res):
     train_data = IMG_Folder( opt.excel_path
                             ,opt.train_folder
                             )
-    valid_data = IMG_Folder( opt.excel_path
+    valid_data = IMG_Folder_val( opt.excel_path
                             ,opt.valid_folder)
     
 
